@@ -5,19 +5,36 @@ const parseDateString = (dateString) => {
   if (!dateString || typeof dateString !== 'string') {
     return null;
   }
-  if (dateString.includes('/')) {
-    const parts = dateString.split('/');
-    const day = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10);
-    const year = parseInt(parts[2], 10);
-    return new Date(year, month - 1, day);
-  }
+
   if (dateString.includes('-')) {
     const parts = dateString.split('-');
-    const year = parseInt(parts[0], 10);
-    const month = parseInt(parts[1], 10);
-    const day = parseInt(parts[2], 10);
-    return new Date(year, month - 1, day);
+    if (parts.length === 3) {
+      const year = parseInt(parts[0], 10);
+      const month = parseInt(parts[1], 10);
+      const day = parseInt(parts[2], 10);
+      if (year > 1900 && month >= 1 && month <= 12 && day >= 1 && day <= 31) {
+        return new Date(year, month - 1, day);
+      }
+    }
+  }
+
+  if (dateString.includes('/')) {
+    const parts = dateString.split('/');
+    if (parts.length === 3) {
+      const part1 = parseInt(parts[0], 10);
+      const part2 = parseInt(parts[1], 10);
+      let year = parseInt(parts[2], 10);
+
+      if (year < 100) {
+        year += 2000;
+      }
+      if (part2 > 12 && part1 <= 12) {
+        return new Date(year, part1 - 1, part2); 
+      }
+      if (part1 <= 31 && part2 <= 12) {
+        return new Date(year, part2 - 1, part1); 
+      }
+    }
   }
   return null;
 };
@@ -41,7 +58,7 @@ const useData = (filePath) => {
 
         Papa.parse(text, {
           header: true,
-          dynamicTyping: true,
+          dynamicTyping: false, 
           skipEmptyLines: true,
           complete: (results) => {
             const processedData = results.data.map(row => {
@@ -52,7 +69,7 @@ const useData = (filePath) => {
                 Pemasukan: parseFloat(String(row.Pemasukan).replace(/,/g, '')) || 0,
                 Pengeluaran: parseFloat(String(row.Pengeluaran).replace(/,/g, '')) || 0,
                 Jumlah: parseFloat(String(row.Jumlah).replace(/,/g, '')) || 0,
-                'Volume (L)': row['Volume (L)'] === '-' ? 0 : parseFloat(row['Volume (L)']) || 0,
+                'Volume (L)': row['Volume (L)'] === '-' ? 0 : parseFloat(String(row['Volume (L)'])) || 0,
                 Tanggal: tanggalObjek,
               };
             });
