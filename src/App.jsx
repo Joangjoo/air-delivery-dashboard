@@ -3,8 +3,7 @@ import { Routes, Route } from 'react-router-dom';
 import useData from './hooks/useData';
 import useDashboardStore from './store/useDashboardStore';
 import FilterBar from './components/FilterBar';
-import Sidebar from './components/Sidebar'; 
-
+import Sidebar from './components/Sidebar';
 import FinancialSummary from './components/FinancialSummary';
 import VolumeSummary from './components/VolumeSummary';
 import DeliveryMap from './components/DeliveryMap';
@@ -31,26 +30,41 @@ function App() {
 
   const mergedRawData = useMemo(() => {
     if (!transaksiData || !lokasiData) return [];
-    return transaksiData.map(transaksi => {
-      const lokasiMatch = lokasiData.find(lokasi => lokasi['Nama Lokasi'] === transaksi.Order);
+
+    const merged = transaksiData.map(transaksi => {
+      const trimmedOrder = transaksi.Order?.trim().toLowerCase();
+
+      const lokasiMatch = lokasiData.find(lokasi =>
+        lokasi['Nama Lokasi']?.trim().toLowerCase() === trimmedOrder
+      );
+
       return {
         ...transaksi,
-        Latitude: lokasiMatch ? lokasiMatch.Latitude : null,
-        Longitude: lokasiMatch ? lokasiMatch.Longitude : null,
+        Latitude: lokasiMatch ? parseFloat(lokasiMatch.Latitude) : null,
+        Longitude: lokasiMatch ? parseFloat(lokasiMatch.Longitude) : null,
       };
     });
+
+    return merged;
   }, [transaksiData, lokasiData]);
+
+
+
 
   useEffect(() => {
     if (mergedRawData.length > 0) {
       initializeDateRange(mergedRawData);
       setFilterOptions(mergedRawData);
     }
-  }, [mergedRawData, initializeDateRange, setFilterOptions]);
 
+  }, [mergedRawData, initializeDateRange, setFilterOptions]);
   useEffect(() => {
     if (mergedRawData.length === 0) {
       setFilteredData([]);
+      return;
+    }
+    if (!startDate) {
+      setFilteredData(mergedRawData);
       return;
     }
     let currentFilteredData = mergedRawData;
@@ -60,34 +74,29 @@ function App() {
         return item.Tanggal >= startDate && item.Tanggal <= endDate;
       });
     }
-    if (selectedDriver !== 'All') {
+    if (selectedDriver && selectedDriver !== 'All') {
       currentFilteredData = currentFilteredData.filter(item => item.Sopir === selectedDriver);
     }
-    if (selectedArmada !== 'All') {
+    if (selectedArmada && selectedArmada !== 'All') {
       currentFilteredData = currentFilteredData.filter(item => item['Plat Nomor'] === selectedArmada);
     }
-    if (selectedLocation !== 'All') {
-      currentFilteredData = currentFilteredData.filter(item =>
-        item['Jenis Transaksi'] === 'Pemasukan' && item.Order === selectedLocation
-      );
+    if (selectedLocation && selectedLocation !== 'All') {
+      currentFilteredData = currentFilteredData.filter(item => {
+        if (item['Jenis Transaksi'] === 'Pengeluaran') return true;
+        return item.Order === selectedLocation;
+      });
     }
+
     setFilteredData(currentFilteredData);
   }, [mergedRawData, startDate, endDate, selectedDriver, selectedArmada, selectedLocation, setFilteredData]);
 
   if (loadingTransaksi || loadingLokasi) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-gray-100">
-        <p className="text-xl font-semibold text-gray-700">Memuat data dashboard...</p>
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen"><p>Memuat data...</p></div>;
   }
   if (errorTransaksi || errorLokasi) {
-    return (
-      <div className="flex items-center justify-center min-h-screen bg-red-100 text-red-700">
-        <p className="text-xl font-semibold">Error memuat data: {errorTransaksi?.message || errorLokasi?.message}.</p>
-      </div>
-    );
+    return <div className="flex items-center justify-center min-h-screen"><p>Error memuat data.</p></div>;
   }
+
   return (
     <div className="flex min-h-screen bg-gray-100 font-sans">
       <Sidebar />
@@ -95,7 +104,6 @@ function App() {
         <header className="bg-white text-gray-800 p-4 shadow-md border-b">
           <h1 className="text-2xl font-bold text-center">Dashboard Visual Interaktif Pengiriman Air</h1>
         </header>
-
         <main className="flex-1 p-4 md:p-8 overflow-y-auto">
           <section className="bg-white p-6 rounded-lg shadow-md mb-8">
             <h2 className="text-2xl font-semibold text-gray-700 mb-4">Filter Data</h2>
