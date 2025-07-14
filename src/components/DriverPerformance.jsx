@@ -68,11 +68,11 @@ const DriverPerformance = ({ data }) => {
   });
 
   const driverMonthlyPerformance = Array.from(driverMonthlySummaryMap.entries()).map(([driver, monthlyMap]) => {
-      const monthlyData = Array.from(monthlyMap.values()).sort((a, b) => a.sortKey - b.sortKey);
-      return {
-          driverName: driver,
-          monthlyData: monthlyData
-      };
+    const monthlyData = Array.from(monthlyMap.values()).sort((a, b) => a.sortKey - b.sortKey);
+    return {
+      driverName: driver,
+      monthlyData: monthlyData
+    };
   });
 
   const mostActiveDriver = driverTotalSummary.length > 0 ? [...driverTotalSummary].sort((a, b) => b.totalVolume - a.totalVolume)[0] : null;
@@ -82,8 +82,8 @@ const DriverPerformance = ({ data }) => {
   const formatNumber = (number) => {
     return new Intl.NumberFormat('id-ID').format(number);
   };
- 
-  
+
+
 
   return (
     <div className="bg-white p-6 rounded-lg shadow-md h-full flex flex-col">
@@ -103,7 +103,7 @@ const DriverPerformance = ({ data }) => {
       <h3 className="text-xl font-semibold mb-4 text-gray-800">Perbandingan Total Volume Pengiriman antar Sopir</h3>
       <ResponsiveContainer width="100%" height={300}>
         <BarChart
-          data={driverTotalSummary.sort((a,b) => b.totalVolume - a.totalVolume)} // Urutkan berdasarkan volume
+          data={driverTotalSummary.sort((a, b) => b.totalVolume - a.totalVolume)} // Urutkan berdasarkan volume
           margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
@@ -121,28 +121,28 @@ const DriverPerformance = ({ data }) => {
 
       <h3 className="text-xl font-semibold mt-6 mb-4 text-gray-800">Performa Individu Sopir (Volume & Trips per Bulan)</h3>
       {driverMonthlyPerformance.map((driverData) => (
-          <div key={driverData.driverName} className="mb-8">
-              <h4 className="text-lg font-semibold text-gray-700 mb-2">Sopir: {driverData.driverName}</h4>
-              <ResponsiveContainer width="100%" height={200}>
-                  <ComposedChart
-                      data={driverData.monthlyData}
-                      margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
-                  >
-                      <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
-                      <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 10 }} />
-                      <YAxis yAxisId="left" tickFormatter={(value) => `${formatNumber(value)}L`} label={{ value: 'Volume (L)', angle: -90, position: 'insideLeft', fill: '#6b7280', fontSize: 10 }} allowDecimals={false} />
-                      <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${formatNumber(value)}x`} label={{ value: 'Trip', angle: 90, position: 'insideRight', fill: '#6b7280', fontSize: 10 }} allowDecimals={false} />
-                      <Tooltip formatter={(value, name) => {
-                          if (name === 'volume') return [`${formatNumber(value)} L`, 'Volume'];
-                          if (name === 'trips') return [`${formatNumber(value)}x`, 'Trip'];
-                          return value;
-                      }} />
-                      <Legend wrapperStyle={{ paddingTop: 10 }} />
-                      <Bar yAxisId="left" dataKey="volume" fill="#8884d8" name="Volume Terkirim" />
-                      <Line yAxisId="right" type="monotone" dataKey="trips" stroke="#ff7300" name="Jumlah Trip" />
-                  </ComposedChart>
-              </ResponsiveContainer>
-          </div>
+        <div key={driverData.driverName} className="mb-8">
+          <h4 className="text-lg font-semibold text-gray-700 mb-2">Sopir: {driverData.driverName}</h4>
+          <ResponsiveContainer width="100%" height={200}>
+            <ComposedChart
+              data={driverData.monthlyData}
+              margin={{ top: 10, right: 30, left: 0, bottom: 0 }}
+            >
+              <CartesianGrid strokeDasharray="3 3" stroke="#e0e0e0" />
+              <XAxis dataKey="name" tick={{ fill: '#6b7280', fontSize: 10 }} />
+              <YAxis yAxisId="left" tickFormatter={(value) => `${formatNumber(value)}L`} label={{ value: 'Volume (L)', angle: -90, position: 'insideLeft', fill: '#6b7280', fontSize: 10 }} allowDecimals={false} />
+              <YAxis yAxisId="right" orientation="right" tickFormatter={(value) => `${formatNumber(value)}x`} label={{ value: 'Trip', angle: 90, position: 'insideRight', fill: '#6b7280', fontSize: 10 }} allowDecimals={false} />
+              <Tooltip formatter={(value, name) => {
+                if (name === 'volume') return [`${formatNumber(value)} L`, 'Volume'];
+                if (name === 'trips') return [`${formatNumber(value)}x`, 'Trip'];
+                return value;
+              }} />
+              <Legend wrapperStyle={{ paddingTop: 10 }} />
+              <Bar yAxisId="left" dataKey="volume" fill="#8884d8" name="Volume Terkirim" />
+              <Line yAxisId="right" type="monotone" dataKey="trips" stroke="#ff7300" name="Jumlah Trip" />
+            </ComposedChart>
+          </ResponsiveContainer>
+        </div>
       ))}
     </div>
   );
